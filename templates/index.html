@@ -1,0 +1,1215 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROBOBITE — Swiggy for Robots</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Serif+Display&family=EB+Garamond:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #1769d1;
+            --dark-bg: #f4f8fd;
+            --card-bg: #ffffff;
+            --card-border: #c8d9ed;
+            --text-main: #17324d;
+            --text-dim: #5b7188;
+            --cyan: #2384e8;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--dark-bg);
+            background-image: linear-gradient(rgba(244, 248, 253, 0.84), rgba(244, 248, 253, 0.84)), url("{{ url_for('static', filename='roboteat-background.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 60px;
+        }
+
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 1.4rem;
+        }
+
+        .logo img {
+            width: 132px;
+            height: 42px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .warning-strip {
+            background: #e7f1ff;
+            color: #20558d;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--orange);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        .step-panel { display: none; }
+        .step-panel.active { display: block; }
+
+        .btn {
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+
+        /* Profile Card Styling */
+        .profile-card {
+            background: #ffffff;
+            border: 1px solid #b9d4ef;
+            border-radius: 12px;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 12px 28px rgba(23, 50, 77, 0.12);
+            color: #17324d;
+            font-family: 'EB Garamond', Georgia, serif;
+        }
+
+        .profile-heading {
+            margin: 0 0 18px;
+            color: #1769d1;
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 1.8rem;
+            letter-spacing: 0;
+        }
+
+        .profile-form {
+            display: grid;
+            gap: 4px;
+        }
+
+        .profile-form label {
+            color: #1769d1;
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .profile-form select,
+        .profile-form input {
+            color: #17324d;
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 1.05rem;
+            min-height: 42px;
+            border: 1px solid #b9d4ef;
+            background: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .profile-form select:focus,
+        .profile-form input:focus {
+            outline: none;
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(35, 132, 232, 0.15);
+        }
+
+        .profile-status {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #d9e8f7;
+        }
+
+        .profile-status p {
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 1rem;
+            margin: 5px 0;
+        }
+
+        .profile-action {
+            margin-top: 18px;
+            max-width: 320px;
+            box-shadow: 0 8px 18px rgba(23, 105, 209, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            .profile-card {
+                grid-template-columns: 1fr;
+                padding: 18px;
+            }
+
+            .robot-avatar {
+                max-width: 220px;
+                margin: 0 auto;
+            }
+
+            .profile-action {
+                max-width: none;
+            }
+        }
+
+        .robot-avatar {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid var(--cyan);
+        }
+
+        /* Swiggy-like Category Carousel */
+        .category-scroll {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 24px;
+        }
+        .category-card {
+            min-width: 100px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .category-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .category-card img:hover { border-color: var(--orange); }
+
+        .category-card:focus-visible {
+            outline: 3px solid rgba(35, 132, 232, 0.35);
+            outline-offset: 4px;
+            border-radius: 8px;
+        }
+
+        .category-special {
+            display: none;
+            grid-template-columns: 120px 1fr auto;
+            align-items: center;
+            gap: 16px;
+            margin: 0 0 24px;
+            padding: 16px;
+            border: 1px solid #b9d4ef;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 8px 20px rgba(23, 50, 77, 0.1);
+        }
+
+        .category-special.active {
+            display: grid;
+        }
+
+        .category-special img {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .category-special-items {
+            grid-column: 2 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 2px;
+        }
+        .category-special-item {
+            padding: 7px 10px;
+            border-radius: 6px;
+            background: #eaf3ff;
+            color: #17324d;
+            font-size: 0.84rem;
+        }
+
+        .category-special h3 {
+            margin: 0 0 6px;
+            color: #1769d1;
+            font-family: 'DM Serif Display', Georgia, serif;
+        }
+
+        .category-special p {
+            margin: 0;
+            color: var(--text-dim);
+        }
+
+        .category-special .close-category {
+            align-self: start;
+            width: auto;
+            padding: 8px 12px;
+            background: #e7f1ff;
+            color: #1769d1;
+        }
+
+        @media (max-width: 600px) {
+            .category-special {
+                grid-template-columns: 82px 1fr;
+            }
+
+            .category-special img {
+                width: 82px;
+                height: 82px;
+            }
+
+            .category-special .close-category {
+                grid-column: 2;
+                justify-self: start;
+            }
+        }
+
+        .offers-section {
+            margin: 22px 0 26px;
+        }
+
+        .offers-section h3 {
+            margin-bottom: 12px;
+            color: #17324d;
+            font-family: 'DM Serif Display', Georgia, serif;
+        }
+
+        .offers-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 2px 0 8px;
+        }
+
+        .offer-card {
+            flex: 0 0 210px;
+            min-height: 112px;
+            padding: 14px;
+            border: 1px solid #b9d4ef;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 6px 14px rgba(23, 50, 77, 0.08);
+        }
+
+        .offer-card strong {
+            display: block;
+            color: #1769d1;
+            font-size: 1.1rem;
+        }
+
+        .offer-card p {
+            margin: 6px 0 10px;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+        }
+
+        .offer-card button {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+        }
+
+        /* Restaurant & Food Cards */
+        .restaurant-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .restaurant-hero {
+            height: 160px;
+            width: 100%;
+            object-fit: cover;
+        }
+        .restaurant-body { padding: 16px; }
+
+        .food-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 0;
+            border-top: 1px dashed var(--card-border);
+        }
+        .food-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        /* Cart Floating Bar */
+        .floating-cart-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            background: var(--orange);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(23, 105, 209, 0.2);
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background: #dce9f8;
+            height: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--orange);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .robot-eating-scene {
+            position: relative;
+            width: 220px;
+            height: 72px;
+            margin: 10px auto 0;
+            overflow: hidden;
+            color: #1769d1;
+        }
+
+        .eating-robot {
+            position: absolute;
+            right: 22px;
+            bottom: 4px;
+            font-size: 3rem;
+            line-height: 1;
+            transform-origin: 50% 100%;
+            animation: robotChew 1s ease-in-out infinite;
+        }
+
+        .eating-food {
+            position: absolute;
+            left: 28px;
+            bottom: 18px;
+            font-size: 1.8rem;
+            line-height: 1;
+            animation: foodToRobot 2.8s ease-in-out infinite;
+        }
+
+        .eating-tray {
+            position: absolute;
+            right: 12px;
+            bottom: 0;
+            width: 72px;
+            height: 8px;
+            border-radius: 50%;
+            background: #b9d4ef;
+        }
+
+        .robot-food-facts {
+            position: relative;
+            max-width: 620px;
+            margin: 24px auto 0;
+            padding: 24px 118px;
+            border: 1px solid #b9d4ef;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 10px 24px rgba(23, 50, 77, 0.12);
+            overflow: hidden;
+        }
+
+        .robot-food-facts h2 {
+            margin: 0 0 8px;
+            color: #1769d1;
+            font-family: 'DM Serif Display', Georgia, serif;
+        }
+
+        .robot-food-facts p {
+            margin: 0;
+            color: #17324d;
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 1.12rem;
+        }
+
+        .floating-food-image {
+            position: absolute;
+            width: 58px;
+            height: 58px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 5px 12px rgba(23, 50, 77, 0.2);
+            animation: foodImageFloat 3.8s ease-in-out infinite;
+        }
+
+        .floating-food-image.food-left {
+            left: 24px;
+            top: 22px;
+        }
+
+        .floating-food-image.food-right {
+            right: 24px;
+            bottom: 22px;
+            animation-delay: -1.9s;
+        }
+
+        @keyframes foodImageFloat {
+            0%, 100% { transform: translateY(5px) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        @keyframes foodToRobot {
+            0%, 15% { transform: translate(0, 0) rotate(-8deg); opacity: 1; }
+            55% { transform: translate(92px, -24px) rotate(12deg); opacity: 1; }
+            68%, 100% { transform: translate(122px, -11px) rotate(20deg); opacity: 0; }
+        }
+
+        @keyframes robotChew {
+            0%, 45%, 100% { transform: rotate(0) translateY(0); }
+            52% { transform: rotate(-5deg) translateY(-3px); }
+            60% { transform: rotate(5deg) translateY(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .eating-food,
+            .eating-robot,
+            .floating-food-image {
+                animation: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .robot-food-facts {
+                padding: 22px 76px;
+            }
+
+            .floating-food-image {
+                width: 46px;
+                height: 46px;
+            }
+
+            .floating-food-image.food-left {
+                left: 14px;
+            }
+
+            .floating-food-image.food-right {
+                right: 14px;
+            }
+        }
+
+        .delivery-location-card {
+            background: #ffffff;
+            border: 1px solid #b9d4ef;
+            border-radius: 14px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            box-shadow: 0 12px 28px rgba(23, 50, 77, 0.12);
+        }
+
+        .delivery-location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .delivery-location-header h2 {
+            margin: 0;
+            color: #17324d;
+            font-family: 'DM Serif Display', Georgia, serif;
+        }
+
+        .delivery-live-badge {
+            color: #1769d1;
+            background: #e7f1ff;
+            border-radius: 20px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .delivery-map {
+            position: relative;
+            height: 118px;
+            overflow: hidden;
+            border: 1px solid #d9e8f7;
+            border-radius: 10px;
+            background-color: #eef6ff;
+            background-image: linear-gradient(30deg, transparent 45%, rgba(185, 212, 239, 0.45) 46%, transparent 49%), linear-gradient(120deg, transparent 45%, rgba(185, 212, 239, 0.4) 46%, transparent 49%);
+            background-size: 54px 54px;
+        }
+
+        .delivery-route {
+            position: absolute;
+            left: 14%;
+            right: 14%;
+            top: 54%;
+            height: 4px;
+            border-radius: 4px;
+            background: #2384e8;
+            transform: rotate(-8deg);
+        }
+
+        .delivery-pin {
+            position: absolute;
+            top: 40%;
+            z-index: 1;
+            width: 28px;
+            height: 28px;
+            display: grid;
+            place-items: center;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            color: #ffffff;
+            box-shadow: 0 3px 8px rgba(23, 50, 77, 0.2);
+        }
+
+        .delivery-pin.pickup {
+            left: 10%;
+            background: #1769d1;
+        }
+
+        .delivery-pin.destination {
+            right: 10%;
+            background: #18a66a;
+        }
+
+        .delivery-courier {
+            position: absolute;
+            top: 28%;
+            left: 47%;
+            z-index: 2;
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #1769d1;
+            box-shadow: 0 4px 10px rgba(23, 50, 77, 0.2);
+            animation: courierMove 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes courierMove {
+            from { transform: translateX(-20px) translateY(5px); }
+            to { transform: translateX(20px) translateY(-5px); }
+        }
+
+        .delivery-location-details {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 10px;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+        }
+
+        .delivery-location-status {
+            margin: 16px 0 0;
+            color: #17324d;
+            font-weight: 700;
+        }
+
+        .robot-game {
+            margin: 20px 0;
+            padding: 18px;
+            border: 1px solid #b9d4ef;
+            border-radius: 14px;
+            background: #ffffff;
+            box-shadow: 0 10px 24px rgba(23, 50, 77, 0.1);
+            text-align: left;
+        }
+
+        .robot-game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .robot-game-header h3 {
+            margin: 0;
+            color: #1769d1;
+            font-family: 'DM Serif Display', Georgia, serif;
+        }
+
+        .robot-game-stats {
+            color: #17324d;
+            font-size: 0.9rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .robot-game-board {
+            position: relative;
+            height: 170px;
+            overflow: hidden;
+            border: 1px solid #d9e8f7;
+            border-radius: 10px;
+            background: linear-gradient(160deg, #eef6ff, #dcecfb);
+        }
+
+        .game-robot {
+            position: absolute;
+            right: 18px;
+            bottom: 12px;
+            font-size: 3rem;
+            filter: drop-shadow(0 4px 3px rgba(23, 50, 77, 0.15));
+        }
+
+        .game-food {
+            position: absolute;
+            top: 50px;
+            left: 30px;
+            display: none;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            font-size: 2rem;
+            cursor: pointer;
+            filter: drop-shadow(0 4px 3px rgba(23, 50, 77, 0.18));
+            animation: gameFoodPulse 0.8s ease-in-out infinite alternate;
+        }
+
+        .game-food:focus-visible {
+            outline: 3px solid #1769d1;
+            outline-offset: 3px;
+            border-radius: 50%;
+        }
+
+        .robot-game-message {
+            margin: 10px 0 0;
+            color: var(--text-dim);
+            font-size: 0.88rem;
+        }
+
+        .servant-choice {
+            display: grid;
+            gap: 8px;
+            margin-top: 18px;
+            padding: 16px;
+            border: 1px solid #b9d4ef;
+            border-radius: 10px;
+            background: #f4f8fd;
+        }
+
+        .servant-choice label,
+        .servant-status {
+            color: #1769d1;
+            font-weight: 700;
+        }
+
+        .servant-choice select {
+            width: 100%;
+            min-height: 42px;
+            padding: 8px;
+            border: 1px solid #b9d4ef;
+            border-radius: 6px;
+            background: #ffffff;
+            color: #17324d;
+            font: inherit;
+        }
+
+        .servant-status {
+            margin: 8px 0 0;
+            font-size: 0.9rem;
+        }
+
+        @keyframes gameFoodPulse {
+            from { transform: scale(0.92) rotate(-8deg); }
+            to { transform: scale(1.08) rotate(8deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .delivery-courier,
+            .game-food {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='robobite-logo.png') }}" alt="ROBOBITE logo">
+    </div>
+    <div id="nav-profile-name" style="color:var(--text-dim); font-size: 0.9rem;">Guest Robot</div>
+</div>
+
+<div class="warning-strip">
+    ⚠️ <strong>SAFETY WARNING:</strong> Robots cannot digest or consume any organic food sold on this platform.
+</div>
+
+<div class="container">
+
+    <!-- STEP 1: HOME -->
+    <div id="step-home" class="step-panel active" style="text-align: center; padding: 40px 0;">
+        <img src="{{ url_for('static', filename='robobite-logo.png') }}" style="width: 220px; height: 220px; object-fit: contain; border-radius: 50%; border: 3px solid var(--orange); background: #ffffff;" alt="ROBOBITE logo">
+        <div class="robot-eating-scene" role="img" aria-label="Animated robot eating food">
+            <span class="eating-food" aria-hidden="true">🍕</span>
+            <span class="eating-robot" aria-hidden="true">🤖</span>
+            <span class="eating-tray" aria-hidden="true"></span>
+        </div>
+        <h1 style="font-family: 'Cinzel', Georgia, serif; color: #1769d1; font-size: 2.5rem; margin-top: 20px;">Food Delivery for Robots</h1>
+        <p style="font-family: 'Merriweather', Georgia, serif; color: var(--text-dim);">Humans: ❌ Not Allowed | Robots: ✅ 100% Welcome</p>
+        <section class="robot-food-facts" aria-labelledby="robot-food-heading">
+            <img class="floating-food-image food-left" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=180" alt="Pizza">
+            <img class="floating-food-image food-right" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=180" alt="Burger">
+            <h2 id="robot-food-heading">Why do robots need food?</h2>
+            <p>We do not eat it. We simply stare at it until our cameras feel full and our batteries feel emotionally supported.</p>
+        </section>
+        <div style="max-width: 300px; margin: 30px auto;">
+            <button class="btn" onclick="goToStep('step-profile')">🤖 SELECT YOUR ROBOT AVATAR</button>
+        </div>
+    </div>
+
+    <!-- STEP 2: ROBOT REGISTRATION -->
+    <div id="step-profile" class="step-panel">
+        <h2 class="profile-heading">Create Robot Profile</h2>
+        <div class="profile-card">
+            <img id="avatar-preview" class="robot-avatar" src="{{ url_for('static', filename='man-and-rob-profile.png') }}" alt="Man and robot profile avatar">
+            <div class="profile-form">
+                <label>Choose Model Avatar:</label>
+                <select id="robot-avatar-select" onchange="updateAvatarPreview()" style="width:100%; padding:8px; margin-bottom:12px; background:#ffffff; color:#17324d; border:1px solid #c8d9ed; border-radius:6px;">
+                    <option value="{{ url_for('static', filename='man-and-rob-profile.png') }}">Man and Rob Unit-01</option>
+                    <option value="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500">Industrial Arm Unit-X</option>
+                    <option value="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=500">Android Assistant V2</option>
+                </select>
+
+                <label>Robot Name:</label>
+                <input type="text" id="robot-name" value="R2-BITE" style="width:100%; padding:8px; margin-bottom:12px; background:#ffffff; color:#17324d; border:1px solid #c8d9ed; border-radius:6px; box-sizing:border-box;">
+
+                <label style="color: #1769d1;">Battery Level (%):</label>
+                <input type="number" id="robot-battery" value="87" style="width:100%; padding:8px; margin-bottom:12px; background:#ffffff; color:#17324d; border:1px solid #c8d9ed; border-radius:6px; box-sizing:border-box;">
+
+                <div class="profile-status">
+                    <p style="color:#d95872;">Mouth Hardware: ❌ Not Detected</p>
+                    <p style="color:#d95872;">Stomach Chamber: ❌ Not Detected</p>
+                </div>
+            </div>
+        </div>
+        <button class="btn profile-action" onclick="saveProfile()">PROCEED TO RESTAURANTS <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <!-- STEP 3: RESTAURANTS (SWIGGY STYLE) -->
+    <div id="step-market" class="step-panel">
+        <h3>What's on your memory drive?</h3>
+        <div id="categories-container" class="category-scroll"></div>
+        <section id="category-special" class="category-special" aria-live="polite">
+            <img id="category-special-image" src="" alt="">
+            <div>
+                <h3 id="category-special-name"></h3>
+                <p id="category-special-description"></p>
+            </div>
+            <button class="btn close-category" type="button" onclick="closeCategorySpecial()">Close</button>
+            <div id="category-special-items" class="category-special-items"></div>
+        </section>
+
+        <div style="background: #eaf3ff; border-left: 4px solid var(--cyan); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+            <h4>🧠 AI Food Selector</h4>
+            <button class="btn" style="background: var(--cyan); color:white;" onclick="getAIRecommendation()">Ask AI What To Stare At</button>
+            <div id="ai-output" style="display:none; margin-top:12px; font-size:0.9rem;">
+                <p><strong>Recommendation:</strong> <span id="rec-item"></span></p>
+                <p><strong>Reasoning:</strong> <span id="rec-reason"></span></p>
+            </div>
+        </div>
+
+        <section class="offers-section" aria-labelledby="offers-heading">
+            <h3 id="offers-heading"><i class="fa-solid fa-tag"></i> Offers for Robots</h3>
+            <div class="offers-scroll">
+                <article class="offer-card">
+                    <strong>20% OFF</strong>
+                    <p>On orders above ₹499. Maximum discount ₹150.</p>
+                    <button class="btn" type="button" onclick="applyOffer('ROBO20', 0.2, 499)">Apply ROBO20</button>
+                </article>
+                <article class="offer-card">
+                    <strong>₹100 OFF</strong>
+                    <p>On orders above ₹799. Built for hungry robots.</p>
+                    <button class="btn" type="button" onclick="applyOffer('BYTE100', 100, 799)">Apply BYTE100</button>
+                </article>
+                <article class="offer-card">
+                    <strong>Free Delivery</strong>
+                    <p>Save on delivery for any order above ₹399.</p>
+                    <button class="btn" type="button" onclick="applyOffer('FREEBOT', 0, 399)">Apply FREEBOT</button>
+                </article>
+            </div>
+            <p id="offer-message" style="color:var(--text-dim); font-size:0.85rem; margin:8px 0 0;">Choose an offer before you browse the kitchens.</p>
+        </section>
+
+        <h3>Nearby Autonomous Kitchens</h3>
+        <div id="restaurant-list"></div>
+    </div>
+
+    <!-- STEP 4: CART -->
+    <div id="step-cart" class="step-panel">
+        <h2>Your Robot Cart 🛒</h2>
+        <div id="cart-items"></div>
+        <hr style="border-color: var(--card-border); margin: 20px 0;">
+        <h3>Total Waste Amount: ₹<span id="cart-total">0</span></h3>
+        <p id="cart-discount" style="color:#18a66a; font-weight:bold; display:none;"></p>
+        <div style="background: #eaf3ff; padding: 16px; border-radius: 8px;">
+            <p>Digestability Capability: <strong>0%</strong></p>
+            <p>Calories Consumed: <strong>0 kcal</strong></p>
+        </div>
+        <div class="servant-choice">
+            <label for="serving-servant"><i class="fa-solid fa-user-gear"></i> Choose a serving attendant</label>
+            <select id="serving-servant">
+                <option value="Robo Butler">Robo Butler - Formal table service</option>
+                <option value="Chef Servo">Chef Servo - Kitchen-to-table specialist</option>
+                <option value="Drone Attendant">Drone Attendant - Contactless service</option>
+            </select>
+        </div>
+        <button class="btn" style="margin-top: 20px;" onclick="processCheckout()">PLACE USELESS ORDER</button>
+    </div>
+
+    <!-- STEP 5: TRACKING -->
+    <div id="step-tracking" class="step-panel" style="text-align: center;">
+        <h2>Order Tracking <span id="track-order-id"></span></h2>
+        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px;" alt="Drone Delivery">
+        <div class="progress-bar">
+            <div id="track-fill" class="progress-fill"></div>
+        </div>
+        <p id="track-status">Assigning Delivery Drone...</p>
+        <p class="servant-status"><i class="fa-solid fa-user-gear"></i> Serving attendant: <strong id="track-servant">Robo Butler</strong></p>
+
+        <div class="robot-game">
+            <div class="robot-game-header">
+                <h3><i class="fa-solid fa-gamepad"></i> Catch the Food</h3>
+                <span class="robot-game-stats">Score: <span id="game-score">0</span> | Time: <span id="game-time">10</span>s</span>
+            </div>
+            <div class="robot-game-board">
+                <span class="game-robot" aria-hidden="true">🤖</span>
+                <button id="game-food" class="game-food" type="button" onclick="catchFood()" aria-label="Catch the moving food">🍔</button>
+            </div>
+            <p id="game-message" class="robot-game-message">Help the robot catch food while the order is on its way.</p>
+        </div>
+    </div>
+
+    <!-- STEP 6: USELESSNESS REPORT -->
+    <div id="step-report" class="step-panel" style="text-align: center;">
+        <h1 style="color: var(--orange);">ORDER DELIVERED 🎉</h1>
+        <p>Your food has arrived and will remain 100% uneaten.</p>
+
+        <div class="delivery-location-card">
+            <div class="delivery-location-header">
+                <h2><i class="fa-solid fa-location-dot"></i> Food Delivery Location</h2>
+                <span class="delivery-live-badge"><i class="fa-solid fa-circle"></i> LIVE</span>
+            </div>
+            <div class="delivery-map" role="img" aria-label="Live delivery route from the autonomous kitchen to the robot">
+                <span class="delivery-route"></span>
+                <span class="delivery-pin pickup"><i class="fa-solid fa-utensils"></i></span>
+                <span class="delivery-courier"><i class="fa-solid fa-robot"></i></span>
+                <span class="delivery-pin destination"><i class="fa-solid fa-house"></i></span>
+            </div>
+            <div class="delivery-location-details">
+                <span>Autonomous Kitchen</span>
+                <span>Robot Station</span>
+            </div>
+            <p class="delivery-location-status"><i class="fa-solid fa-truck-fast"></i> Delivery complete for order <span id="report-order-id"></span></p>
+            <p class="delivery-location-status"><i class="fa-solid fa-user-gear"></i> Served by <strong id="report-servant">Robo Butler</strong></p>
+        </div>
+
+        <div style="background: #eaf3ff; border: 1px solid var(--cyan); padding: 20px; border-radius: 12px; text-align: left;">
+            <p><strong>Robot Review:</strong></p>
+            <p id="review-text" style="font-style: italic; font-size: 1.1rem;"></p>
+            <button class="btn" style="background: var(--cyan); color: white;" onclick="speakReview()"><i class="fa-solid fa-volume-high"></i> Read Review Aloud</button>
+        </div>
+        <button class="btn" style="margin-top: 20px;" onclick="location.reload()">ORDER AGAIN</button>
+    </div>
+
+</div>
+
+<!-- Floating Cart Footer Bar -->
+<div id="floating-cart" class="floating-cart-bar" style="display:none;" onclick="goToStep('step-cart')">
+    <span><span id="cart-count">0</span> Items selected</span>
+    <span>View Cart <i class="fa-solid fa-arrow-right"></i></span>
+</div>
+
+<script>
+    let currentRobot = { name: "R2-BITE", battery: 87 };
+    let cart = [];
+    let gameScore = 0;
+    let gameTime = 10;
+    let gameMoveInterval;
+    let gameTimerInterval;
+    let gameRunning = false;
+    let selectedServant = "Robo Butler";
+    let activeOffer = null;
+
+    function updateAvatarPreview() {
+        document.getElementById('avatar-preview').src = document.getElementById('robot-avatar-select').value;
+    }
+
+    function goToStep(stepId) {
+        document.querySelectorAll('.step-panel').forEach(el => el.classList.remove('active'));
+        document.getElementById(stepId).classList.add('active');
+        if (stepId === 'step-cart') updateCartUI();
+    }
+
+    function saveProfile() {
+        currentRobot.name = document.getElementById('robot-name').value || "R2-BITE";
+        currentRobot.battery = document.getElementById('robot-battery').value || 87;
+        document.getElementById('nav-profile-name').innerText = currentRobot.name;
+        loadCategories();
+        loadRestaurants();
+        goToStep('step-market');
+    }
+
+    async function loadCategories() {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        const container = document.getElementById('categories-container');
+        container.innerHTML = data.map(c => `
+            <div class="category-card" tabindex="0" role="button" onclick="openCategorySpecial('${c.id}')" onkeydown="if(event.key === 'Enter' || event.key === ' ') openCategorySpecial('${c.id}')">
+                <img src="${c.img}" alt="${c.name}">
+                <div style="font-size:0.8rem; margin-top:4px;">${c.name}</div>
+            </div>
+        `).join('');
+        window.categoryData = data;
+    }
+
+    function openCategorySpecial(categoryId) {
+        const category = window.categoryData.find(item => item.id === categoryId);
+        if (!category) return;
+        const categoryRestaurantMap = {
+            pizza: 'RoboPizza 🍕',
+            burger: 'BurgerBot 🍔',
+            biryani: 'Byte Biryani 🍚',
+            chinese: 'Wok & Wire Chinese 🥢',
+            drinks: 'Circuit Cafe ☕',
+            desserts: 'Data Dessert Lab 🍰',
+        };
+        const restaurant = (window.restaurantData || []).find(item => item.name === categoryRestaurantMap[categoryId]);
+        document.getElementById('category-special-image').src = category.img;
+        document.getElementById('category-special-image').alt = category.name;
+        document.getElementById('category-special-name').innerText = category.name;
+        document.getElementById('category-special-description').innerText = restaurant
+            ? `${restaurant.name} • ${restaurant.delivery_time}`
+            : `Explore nearby ${category.name} options selected for your robot's next meal.`;
+        document.getElementById('category-special-items').innerHTML = restaurant
+            ? restaurant.menu.map(item => `<span class="category-special-item">${item.name} • ₹${item.price}</span>`).join('')
+            : '<span class="category-special-item">Nearby menu coming online soon</span>';
+        document.getElementById('category-special').classList.add('active');
+        document.getElementById('category-special').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function closeCategorySpecial() {
+        document.getElementById('category-special').classList.remove('active');
+    }
+
+    async function loadRestaurants() {
+        const res = await fetch('/api/restaurants');
+        const data = await res.json();
+        window.restaurantData = data;
+        const container = document.getElementById('restaurant-list');
+        
+        container.innerHTML = data.map(r => `
+            <div class="restaurant-card">
+                <img class="restaurant-hero" src="${r.img}" alt="${r.name}">
+                <div class="restaurant-body">
+                    <h2>${r.name}</h2>
+                    <p style="color:var(--text-dim); font-size:0.85rem;">${r.delivery_time} • ⭐ ${r.rating}</p>
+                    <p>${r.desc}</p>${r.menu.map(item => `
+                        <div class="food-item">
+                            <div>
+                                <h4>${item.name}</h4>
+                                <p style="color:var(--orange); font-weight:bold;">₹${item.price}</p>
+                                <p style="color:var(--text-dim); font-size:0.8rem;">${item.desc}</p>
+                            </div>
+                            <div style="text-align:center;">
+                                <img class="food-img" src="${item.img}" alt="${item.name}">
+                                <button class="btn" style="padding:4px 12px; margin-top:6px;" onclick="addToCart('${item.name}', ${item.price})">+ ADD</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function addToCart(name, price) {
+        cart.push({ name, price });
+        document.getElementById('cart-count').innerText = cart.length;
+        document.getElementById('floating-cart').style.display = 'flex';
+    }
+
+    function applyOffer(code, value, minimum) {
+        const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+        const message = document.getElementById('offer-message');
+        if (subtotal < minimum) {
+            message.innerText = `${code} unlocks at ₹${minimum}. Add a little more to your cart.`;
+            message.style.color = '#d95872';
+            return;
+        }
+        activeOffer = { code, value, minimum };
+        message.innerText = `${code} applied. Your robot discount is ready at checkout.`;
+        message.style.color = '#18a66a';
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        const container = document.getElementById('cart-items');
+        let subtotal = 0;
+        container.innerHTML = cart.map(i => {
+            subtotal += i.price;
+            return `<div style="display:flex; justify-shadow:space-between; padding:8px 0;"><span>${i.name}</span><span>₹${i.price}</span></div>`;
+        }).join('');
+        let total = subtotal;
+        if (activeOffer && subtotal >= activeOffer.minimum) {
+            total = activeOffer.code === 'ROBO20'
+                ? Math.max(0, subtotal - Math.min(subtotal * activeOffer.value, 150))
+                : activeOffer.code === 'BYTE100' ? Math.max(0, subtotal - activeOffer.value) : subtotal;
+            document.getElementById('cart-discount').innerText = `${activeOffer.code} applied. You saved ₹${Math.round(subtotal - total)}.`;
+            document.getElementById('cart-discount').style.display = 'block';
+        } else {
+            document.getElementById('cart-discount').style.display = 'none';
+        }
+        document.getElementById('cart-total').innerText = total;
+        return total;
+    }
+
+    async function getAIRecommendation() {
+        const res = await fetch('/api/ai-recommend', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(currentRobot)
+        });
+        const data = await res.json();
+        document.getElementById('rec-item').innerText = data.recommendation;
+        document.getElementById('rec-reason').innerText = data.reason;
+        document.getElementById('ai-output').style.display = 'block';
+    }
+
+    function moveGameFood() {
+        const board = document.querySelector('.robot-game-board');
+        const food = document.getElementById('game-food');
+        const maxX = board.clientWidth - 58;
+        const maxY = board.clientHeight - 58;
+        food.style.left = `${Math.max(8, Math.random() * maxX)}px`;
+        food.style.top = `${Math.max(8, Math.random() * maxY)}px`;
+        food.style.display = 'block';
+    }
+
+    function startRobotGame() {
+        clearInterval(gameMoveInterval);
+        clearInterval(gameTimerInterval);
+        gameScore = 0;
+        gameTime = 10;
+        gameRunning = true;
+        document.getElementById('game-score').innerText = gameScore;
+        document.getElementById('game-time').innerText = gameTime;
+        document.getElementById('game-message').innerText = 'Catch as much food as you can before delivery arrives!';
+        moveGameFood();
+        gameMoveInterval = setInterval(moveGameFood, 700);
+        gameTimerInterval = setInterval(() => {
+            gameTime -= 1;
+            document.getElementById('game-time').innerText = Math.max(0, gameTime);
+            if (gameTime <= 0) {
+                clearInterval(gameTimerInterval);
+                clearInterval(gameMoveInterval);
+                gameRunning = false;
+                document.getElementById('game-food').style.display = 'none';
+                document.getElementById('game-message').innerText = `Game over! Robot caught ${gameScore} food item${gameScore === 1 ? '' : 's'}.`;
+            }
+        }, 1000);
+    }
+
+    function catchFood() {
+        if (!gameRunning) return;
+        gameScore += 1;
+        document.getElementById('game-score').innerText = gameScore;
+        document.getElementById('game-message').innerText = 'Nice catch! The robot is still hungry.';
+        moveGameFood();
+    }
+
+    async function processCheckout() {
+        document.getElementById('floating-cart').style.display = 'none';
+        const subtotal = cart.reduce((sum, i) => sum + i.price, 0);
+        const total = activeOffer && subtotal >= activeOffer.minimum
+            ? activeOffer.code === 'ROBO20'
+                ? Math.max(0, subtotal - Math.min(subtotal * activeOffer.value, 150))
+                : activeOffer.code === 'BYTE100' ? Math.max(0, subtotal - activeOffer.value) : subtotal
+            : subtotal;
+        selectedServant = document.getElementById('serving-servant').value;
+        const res = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ robot_name: currentRobot.name, items: cart.map(i => i.name), total, servant: selectedServant })
+        });
+        const data = await res.json();
+        document.getElementById('track-order-id').innerText = `#${data.order_id}`;
+        document.getElementById('report-order-id').innerText = `#${data.order_id}`;
+        document.getElementById('track-servant').innerText = selectedServant;
+        document.getElementById('report-servant').innerText = selectedServant;
+        goToStep('step-tracking');
+        startRobotGame();
+        
+        let pct = 0;
+        const fill = document.getElementById('track-fill');
+        const status = document.getElementById('track-status');
+        const interval = setInterval(() => {
+            pct += 10;
+            fill.style.width = pct + '%';
+            if(pct === 50) status.innerText = "Drone flying to coordinates...";
+            if(pct === 100) {
+                clearInterval(interval);
+                clearInterval(gameMoveInterval);
+                clearInterval(gameTimerInterval);
+                setTimeout(loadReport, 1000);
+            }
+        }, 1000);
+    }
+
+    async function loadReport() {
+        const res = await fetch('/api/review', { method: 'POST' });
+        const data = await res.json();
+        document.getElementById('review-text').innerText = `"${data.review}"`;
+        goToStep('step-report');
+    }
+
+    function speakReview() {
+        const text = document.getElementById('review-text').innerText;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.pitch = 0.5;
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+</script>
+</body>
+</html>

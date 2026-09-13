@@ -2,34 +2,32 @@
 
 
 
-# [Project Name] 🎯
+# ROBOBITE🎯
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: ConnectX
 
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Team Lead: Tharunika Rajesh - Ilahia College of Engineering and Technology
+- Member 2: Athul Benedict - Ilahia College of Engineering and Technology
+
 
 ### Project Description
-[2-3 lines about what your project does]
+A Food ordering platform for Robots
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+Built an App for hungry robots
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
+made an App for Robots that's actually Useless
 
 ## Technical Details
 ### Technologies/Components Used
 For Software:
-- [Languages used]
-- [Frameworks used]
-- [Libraries used]
-- [Tools used]
+- Python
+- HTML
 
 For Hardware:
 - [List main components]
